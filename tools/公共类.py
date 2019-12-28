@@ -7,6 +7,15 @@ import os
 from db import NodesDb
 import json
  
+
+def article_search():
+    db=tkit.Db(dbpath='../data/article.db')
+    for key in tqdm(db.db):
+        # item=db.get(key)
+        # print(item)
+        print(key)
+
+
 def wiki_zh(file_path,save_all=False):
     """
     处理wikizh
@@ -28,7 +37,7 @@ def wiki_zh(file_path,save_all=False):
                 item=json.loads(it[:-1])
                 text=item['title']+"\n"+item['text']
                 # print("预测结果",)
-                # print(item['title'])
+                # print(text)
                 pre=tclass.pre(text)
                 
                 if pre==1:
@@ -102,8 +111,10 @@ def do_nodes(dbpath,save_all=False):
         un_pet_article_db=tkit.Db(dbpath='../data/un_pet_article.db')
     tclass=classify(model_name_or_path='../model/terry_output')
     i=0
-    for  id,title,content,author,url,label in tqdm(db.get_all_nodes(limit=1000000000000)):
+    # for  id,title,content,author,url,label in tqdm(db.get_all_nodes(limit=1000000000000)):
+    for  id,title,content,author,url in tqdm(db.get_all_nodes(limit=1000000000000)):
         text=title+"\n"+content
+        # print(text)
         # text= text[:512]
         # print("预测结果",)
         # print(len(text[:512]))
@@ -159,7 +170,7 @@ def all_json():
 
 def main():
     parser = argparse.ArgumentParser(usage="运行数据构建.", description="help info.")
-    parser.add_argument("--do", type=str, default='get',required=False, help="输入运行的类型  ( web_text_zh,all_json,get)")
+    parser.add_argument("--do", type=str, default='get',required=False, help="输入运行的类型  ( web_text_zh,all_json,get,do_nodes,article_search)")
     parser.add_argument("--file", type=str, default='get',required=False, help="输入运行的类型  ( web_text_zh(处理 https://www.kaggle.com/terrychanorg/webtext2019zhjsonwebtext2019zh)\n　get, )")
     parser.add_argument("--save_all", type=str, default=False,required=False, help="是否保存非宠物数据　默认False")
 
@@ -174,6 +185,9 @@ def main():
         all_json()
     elif args.do == 'wiki_zh':
         wiki_zh(file_path=args.file,save_all=args.save_all)
+    elif args.do == 'article_search':
+        # 文字构建索引
+        article_search()
 
 if __name__ == '__main__':
     main()

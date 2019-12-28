@@ -110,8 +110,9 @@ class NodesDb:
         """
         随机获取一千个关键词
         """
-        sql="SELECT * FROM nodes limit 81888,"+str(limit)
+        sql="SELECT * FROM nodes limit 0,"+str(limit)
         self.connect.execute(sql)
+        # print(self.connect.fetchall())
         return self.connect.fetchall()
     def get_unlabel_nodes(self,limit=2):
         """
