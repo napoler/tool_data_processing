@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 model/
+tools/indexdir
 # C extensions
 *.so
 

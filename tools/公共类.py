@@ -10,11 +10,41 @@ import json
 
 def article_search():
     db=tkit.Db(dbpath='../data/article.db')
-    for key in tqdm(db.db):
-        # item=db.get(key)
-        # print(item)
-        print(key)
+    tt=tkit.Text()
+    s=tkit.Search()
+    s.init_search()
 
+    d=[]
+    for key,item in tqdm(db.db):
+        # print(key)
+        data=db.get(key)
+        # print(data)
+        # 
+        id=tt.md5(data['title']+data['content'])
+        one={'title':data['title'],'content':data['content'],'path':id}
+        d.append(one)
+        if len(d)==100:
+            s.add(d)
+            d=[]
+    s.add(d)
+        # print(s.find('宠物'))
+        # print(s.find('文档'))
+            
+
+def search(kw):
+    # 关键词转化为文本
+    db=tkit.Db(dbpath='../data/article.db')
+    tt=tkit.Text()
+    s=tkit.Search()
+    # print(s.find('宠物'))
+    file='../data/text/'+kw+'.txt'
+
+
+
+    with    open(file,"w", encoding = 'utf-8')  as f:
+        for line in s.find(kw):
+            f.write(line["title"])
+            f.write(line["content"])
 
 def wiki_zh(file_path,save_all=False):
     """
@@ -23,6 +53,7 @@ def wiki_zh(file_path,save_all=False):
     https://www.kaggle.com/terrychanorg/sentence-wik
     """
     tfile=tkit.File()
+    tt=tkit.Text()
     flist=tfile.all_path(dirname=file_path)
     # print("flist",flist)
 
@@ -41,7 +72,7 @@ def wiki_zh(file_path,save_all=False):
                 pre=tclass.pre(text)
                 
                 if pre==1:
-                    key=hash(text) 
+                    key=tt.md5(text) 
                     i+=1
                     output_db.add(key,{"id":key,"title":item['title'], "content":item['text']})
                     # output_data.save([{"id":key,"title":item['title'], "content":item['content']}])
@@ -72,6 +103,7 @@ def web_text_zh(file_path,save_all=False):
     un_pet_article_db=tkit.Db(dbpath='../data/un_pet_article.db')
     tclass=classify(model_name_or_path='../model/terry_output')
     i=0
+    tt=tkit.Text()
     with open(file_path, 'r', encoding = 'utf-8') as data:
         for it in tqdm(data):
             item=json.loads(it[:-1])
@@ -80,7 +112,7 @@ def web_text_zh(file_path,save_all=False):
             pre=tclass.pre(text)
             
             if pre==1:
-                key=hash(text) 
+                key=tt.md5(text) 
                 # try:
                 #     output_db.get(str(key))
                 #     print("已存在")
@@ -111,6 +143,7 @@ def do_nodes(dbpath,save_all=False):
         un_pet_article_db=tkit.Db(dbpath='../data/un_pet_article.db')
     tclass=classify(model_name_or_path='../model/terry_output')
     i=0
+    tt=tkit.Text()
     # for  id,title,content,author,url,label in tqdm(db.get_all_nodes(limit=1000000000000)):
     for  id,title,content,author,url in tqdm(db.get_all_nodes(limit=1000000000000)):
         text=title+"\n"+content
@@ -120,7 +153,7 @@ def do_nodes(dbpath,save_all=False):
         # print(len(text[:512]))
         pre=tclass.pre(text) #预测
         if pre==1:
-            key=hash(text) 
+            key=tt.md5(text) 
             i+=1
             # print(i)
             output_db.add(key,{"id":key,"title":title, "content":content})#保存数据
@@ -173,6 +206,7 @@ def main():
     parser.add_argument("--do", type=str, default='get',required=False, help="输入运行的类型  ( web_text_zh,all_json,get,do_nodes,article_search)")
     parser.add_argument("--file", type=str, default='get',required=False, help="输入运行的类型  ( web_text_zh(处理 https://www.kaggle.com/terrychanorg/webtext2019zhjsonwebtext2019zh)\n　get, )")
     parser.add_argument("--save_all", type=str, default=False,required=False, help="是否保存非宠物数据　默认False")
+    parser.add_argument("--kw", type=str, default=False,required=False, help="输入关键词")
 
     args = parser.parse_args()
     if args.do == 'web_text_zh':
@@ -188,6 +222,8 @@ def main():
     elif args.do == 'article_search':
         # 文字构建索引
         article_search()
-
+    elif args.do == 'search':
+        # 文字构建索引
+        search(args.kw)
 if __name__ == '__main__':
     main()
